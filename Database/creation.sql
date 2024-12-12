@@ -13,7 +13,7 @@ CREATE TABLE Voitures (
 
 -- Destinations Table
 CREATE TABLE Destinations (
-    id_destination INTEGER PRIMARY KEY,
+    id_destination SERIAL PRIMARY KEY,
     nom_destination VARCHAR(200) NOT NULL,
     lat DECIMAL(12,11) NOT NULL,
     lon DECIMAL(12,11) NOT NULL
@@ -21,7 +21,7 @@ CREATE TABLE Destinations (
 
 -- RelevesKilometres Table
 CREATE TABLE RelevesKilometres (
-    id_releve INTEGER PRIMARY KEY,
+    id_releve SERIAL PRIMARY KEY,
     immat VARCHAR(20) NOT NULL,
     releve_km INTEGER NOT NULL,
     date_releve DATE NOT NULL,
@@ -31,13 +31,13 @@ CREATE TABLE RelevesKilometres (
 
 -- typeDefauts Table
 CREATE TABLE typeDefauts (
-    id_defaut INTEGER PRIMARY KEY,
+    id_defaut SERIAL PRIMARY KEY,
     categorie VARCHAR(100) NOT NULL
 );
 
 -- DefautsRemarque Table
 CREATE TABLE DefautsRemarque (
-    id_releve INTEGER PRIMARY KEY,
+    id_releve SERIAL PRIMARY KEY,
     immat VARCHAR(20) NOT NULL,
     date_remarque DATE NOT NULL,
     id_categorie INTEGER NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE DefautsRemarque (
 
 -- PlanningReservation Table
 CREATE TABLE PlanningReservation (
-    id_res INTEGER PRIMARY KEY,
+    id_res SERIAL PRIMARY KEY,
     immat VARCHAR(20) NOT NULL,
     date_debut DATE NOT NULL,
     date_fin DATE NOT NULL,
