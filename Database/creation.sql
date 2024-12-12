@@ -36,7 +36,7 @@ CREATE TABLE typeDefauts (
 
 -- DéfautsRemarque Table
 CREATE TABLE DéfautsRemarque (
-    id_releve INTEGER PRIMARY KEY,
+    id_remarqeue INTEGER PRIMARY KEY,
     immat VARCHAR(20) NOT NULL,
     date_remarque DATE NOT NULL,
     catégorie VARCHAR(100) NOT NULL,
