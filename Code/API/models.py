@@ -48,3 +48,37 @@ class RelevesKilometres(db.Model):
             'date_releve': self.date_releve.isoformat(),  # Convertir la date en format ISO
             'source_releve': self.source_releve
         }
+
+
+
+class Typedefauts(db.Model):
+    __tablename__ = 'typedefauts' 
+    id_defaut = db.Column(db.Integer, primary_key=True)
+    categorie = db.Column(db.String(20), nullable=False)
+    def to_dict(self):
+        return {
+            'id_defaut': self.id_defaut,
+            'categorie': self.categorie,
+        }
+    
+
+
+
+class Defautsremarque(db.Model):
+    __tablename__ = 'defautsremarque' 
+    id_releve = db.Column(db.Integer, primary_key=True)
+    immat = db.Column(db.String(20), nullable=False)
+    date_remarque = db.Column(db.Date, nullable=False)
+    id_categorie = db.Column(db.Integer, nullable=False)
+    commentaire_libre = db.Column(db.String(100), nullable=False)
+    
+    def to_dict(self):
+        defaut = Typedefauts.query.get(self.id_categorie)
+        return {
+            'id_releve': self.id_releve,
+            'immat': self.immat,
+            'date_remarque': self.date_remarque,
+            'id_categorie': self.id_categorie,
+            'commentaire_libre': self.commentaire_libre,
+            'categorie': defaut.categorie if defaut else None
+        }

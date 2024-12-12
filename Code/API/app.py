@@ -1,7 +1,7 @@
 # app.py
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from models import db, Voiture
-from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage
+from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage, get_defauts_veh, post_defaut_veh    
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -53,6 +53,35 @@ def add_kilometrage(immat):
 @app.route('/voiture/<immat>/dernier_kilometrage', methods=['GET'])
 def kilometre_last(immat):
     return jsonify(dernier_kilometrage(immat))
+
+
+# Ajouter des defauts a un véhicule
+@app.route('/voiture/add_defauts', methods=['POST'])
+def add_defaut_veh():
+    data = request.get_json()
+    
+    # defauts_veh_list = []
+    for defaut_veh in data:
+        
+         # Vérifier que les champs obligatoires sont présents
+        if not defaut_veh or 'immat' not in defaut_veh or 'id_defaut' not in defaut_veh or 'commentaire_libre' not in defaut_veh :
+            return jsonify({'error': 'Les champs "immat", "commentaire_libre" et "id_defaut" sont obligatoires.'}), 400
+        
+        immat = defaut_veh['immat']
+        id_defaut = defaut_veh['id_defaut']
+        commentaire_libre = defaut_veh['commentaire_libre']
+
+        result, status_code = post_defaut_veh(immat, id_defaut, commentaire_libre)
+ 
+        return jsonify(result),status_code
+
+
+
+# Afficher les defauts d'un véhicule
+@app.route('/voiture/<immat>/defauts', methods=['GET'])
+def defauts_veh(immat):
+   return jsonify(get_defauts_veh(immat))
+
 
 if __name__ == '__main__':
     with app.app_context():

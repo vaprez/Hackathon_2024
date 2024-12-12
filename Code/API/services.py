@@ -1,5 +1,5 @@
 # services.py
-from models import db, Voiture, RelevesKilometres
+from models import db, Voiture, RelevesKilometres, Defautsremarque
 from datetime import date
 
 def get_voitures():
@@ -43,7 +43,27 @@ def post_kilometrage(immat, releve_km, source_releve):
     return new_releve.to_dict(), 201
 
 
-    return True
+def get_defauts_veh(immat):
+    defauts_veh = Defautsremarque.query.filter_by(immat=immat).all()
+    return [defaut.to_dict() for defaut in defauts_veh]
+
+def post_defaut_veh(immat, id_defaut, commentaire_libre):
+     # Vérifier que la voiture existe
+    voiture = Voiture.query.filter_by(immat=immat).first()
+    if not voiture:
+        return {'error': 'Aucune voiture trouvée avec cette immatriculation.'}, 404
+    
+    new_defaut = Defautsremarque(
+        immat=immat,
+        date_remarque=date.today(),
+        id_categorie=id_defaut,
+        commentaire_libre=commentaire_libre
+    )
+    db.session.add(new_defaut)
+    db.session.commit()
+    return {'message': 'Defaut ajouté avec succès'}
+
+
 
 def dernier_kilometrage(immat):
     dernier_releve = RelevesKilometres.query.filter_by(immat=immat).order_by(RelevesKilometres.releve_km.desc()).first()
