@@ -1,6 +1,7 @@
 -- Voitures Table
 CREATE TABLE Voitures (
     immat VARCHAR(20) PRIMARY KEY,
+    modele VARCHAR(50) NOT NULL,
     propulsion VARCHAR(50) NOT NULL,
     nb_places INTEGER NOT NULL,
     autonomie_theorique INTEGER NOT NULL,
@@ -13,9 +14,9 @@ CREATE TABLE Voitures (
 -- Destinations Table
 CREATE TABLE Destinations (
     id_destination INTEGER PRIMARY KEY,
-    Nom_destination VARCHAR(200) NOT NULL,
-    Lat DECIMAL(12,11) NOT NULL,
-    Lon DECIMAL(12,11) NOT NULL
+    nom_destination VARCHAR(200) NOT NULL,
+    lat DECIMAL(12,11) NOT NULL,
+    lon DECIMAL(12,11) NOT NULL
 );
 
 -- RelevesKilometres Table
@@ -31,18 +32,18 @@ CREATE TABLE RelevesKilometres (
 -- typeDefauts Table
 CREATE TABLE typeDefauts (
     id_defaut INTEGER PRIMARY KEY,
-    catégorie VARCHAR(100) NOT NULL
+    categorie VARCHAR(100) NOT NULL
 );
 
--- DéfautsRemarque Table
-CREATE TABLE DéfautsRemarque (
+-- DefautsRemarque Table
+CREATE TABLE DefautsRemarque (
     id_releve INTEGER PRIMARY KEY,
     immat VARCHAR(20) NOT NULL,
     date_remarque DATE NOT NULL,
-    catégorie VARCHAR(100) NOT NULL,
+    id_categorie INTEGER NOT NULL,
     commentaire_libre TEXT,
     FOREIGN KEY (immat) REFERENCES Voitures(immat),
-    FOREIGN KEY (catégorie) REFERENCES typeDefauts(catégorie)
+    FOREIGN KEY (id_categorie) REFERENCES typeDefauts(id_defaut)
 );
 
 -- PlanningReservation Table
