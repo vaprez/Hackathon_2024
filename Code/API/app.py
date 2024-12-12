@@ -2,6 +2,7 @@
 from flask import Flask, jsonify
 from models import db, Vehicule
 from services import get_vehicules, get_vehicule
+from detect import *
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -22,6 +23,31 @@ def vehicules():
 @app.route('/vehicule/<immat>', methods=['GET'])
 def vehicule(immat):
     return jsonify(get_vehicule(immat))
+
+@app.route('/vehicule/immat_ocr', methods=['POST'])
+def vehicule_imat():
+    data = request.get_json()
+    if not data or 'blob' not in data:
+        return jsonify({'error': 'Aucune chaîne de texte trouvée dans le JSON'}), 400
+    blob = data['blob']
+    image_bytes,extension = base64_to_image(blob)
+    image = create_image_from_bytes(image_bytes)
+    image_path = save_image(image,extension)
+    detected_plate = immat_recognition(image_path)
+    return jsonify(detected_plate)
+
+
+@app.route('/vehicule/compteur',methods=['POST'])
+def vehicule_km():
+    data = request.get_json()
+    if not data or 'blob' not in data:
+            return jsonify({'error': 'Aucune chaîne de texte trouvée dans le JSON'}), 400
+    blob = data['blob']
+    image_bytes,extension = base64_to_image(blob)
+    image = create_image_from_bytes(image_bytes)
+    image_path = save_image(image,extension)
+    detected_km = kilommetrage_recognition(image_path)
+    return jsonify(detected_km)
 
 
 if __name__ == '__main__':

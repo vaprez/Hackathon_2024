@@ -14,19 +14,40 @@ import numpy as np
 
 app = Flask(__name__)
 
-# Remplacez ces valeurs par vos propres valeurs
-HOST = "your-host-url"
-API_KEY = "your-api-key"
+def supprimer_km(liste_valeurs):
+    """Supprime le suffixe "km" des éléments de la liste s'il est présent.
 
-@app.route("/", methods=["GET"])
-def hello_world():
-    return "<p>Hello, World!</p>"
+    Args:
+        liste_valeurs: La liste de valeurs à traiter.
 
+    Returns:
+        Une nouvelle liste avec les éléments modifiés.
+    """
 
-@app.route("/vehicule/immat_ocr",methods=["POST"])
+    nouvelle_liste = []
+    for valeur in liste_valeurs:
+        if "km" in valeur:
+            nouvelle_valeur = valeur.replace("km", "")
+            nouvelle_liste.append(nouvelle_valeur)
+        else:
+            nouvelle_liste.append(valeur)
+    return nouvelle_liste
 
+def convert_to_int_list(string_list):
+    """
+    Convertit une liste de chaînes en entiers, en sautant celles qui ne peuvent pas être converties.
 
-
+    :param string_list: Liste de chaînes à convertir
+    :return: Liste d'entiers
+    """
+    int_list = []
+    for item in string_list:
+        try:
+            int_list.append(int(item))
+        except ValueError:
+            # Sauter les valeurs qui ne peuvent pas être converties
+            continue
+    return int_list
 
 
 # function pour la reconnaissance de plaque
@@ -44,7 +65,7 @@ def immat_recognition(image_path):
         return None
 
     # Initialiser le lecteur EasyOCR
-    reader = easyocr.Reader(['en'], gpu=False)
+    reader = easyocr.Reader(['en'], gpu=True)
 
     # Lire le texte dans l'image
     text_results = reader.readtext(image_path)
@@ -63,10 +84,58 @@ def immat_recognition(image_path):
     # Si aucune plaque n'est trouvée
     return None
 
+
+
+# function pour la reconnaissance de plaque
+def kilommetrage_recognition(image_path):
+    """
+    Extrait le nombre de kilomètre à partir d'une image.
+
+    :param image_path: Chemin de l'image contenant le nombre de km.
+    :return: Le nombre de km ou None si rien n'est trouvé.
+    """
+    # Charger l'image
+    img = cv2.imread(image_path)
+
+    # Vérifiez si l'image est chargée
+    if img is None:
+        print(f"Impossible de charger l'image : {image_path}")
+        return None
+
+    # Instance du lecteur OCR avec GPU désactivé si non nécessaire
+    reader = easyocr.Reader(['en'], gpu=True)  # Changez gpu=True si vous avez une carte GPU compatible
+
+    # Détection de texte
+    text_results = reader.readtext(image_path)
+
+    # Filtrer et extraire uniquement les résultats pertinents contenant 'km'
+    all_detected = [
+        detected_text
+        for _, detected_text, score in text_results
+        if score > 0.70 and 'km' in detected_text.lower()  # Ajouter un filtre pour ne garder que les textes contenant 'km'
+    ]
+
+    # Suppression des éléments inutiles et conversion en entiers
+    all_detected = supprimer_km(all_detected)
+    detected_km = convert_to_int_list(all_detected)
+
+    print(f"Kilométrage détecté: {detected_km}")
+
+    # Trouver le kilométrage le plus grand
+    if detected_km:
+        max_km = max(detected_km)  # Trouver le maximum
+        print(f"Kilométrage le plus grand : {max_km} km")
+        return max_km
+    else:
+        print("Aucun kilométrage détecté avec un score supérieur à 0.70.")
+        return None
+
 image_path = 'C:\Master2\Hackathon_2024\Code\API\images\plaque1.jpeg'
+#image_path1 = 'C:\Master2\Hackathon_2024\Code\API\images\compteur1.jpeg'
 
 # Appeler la fonction
 detected_plate = immat_recognition(image_path)
+#detected_plate1 = kilommetrage_recognition(image_path1)
 
 # Afficher le résultat
 if detected_plate:
@@ -117,8 +186,6 @@ image_bytes,extension = base64_to_image(base64_string)
 img = create_image_from_bytes(image_bytes)
 
 save_image(img,extension)
-
-
 
 
 if __name__ == "__main__":
