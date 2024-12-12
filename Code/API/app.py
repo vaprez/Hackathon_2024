@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask, jsonify, request
 from models import db, Voiture
-from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage
+from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -49,6 +49,10 @@ def add_kilometrage(immat):
 
     return jsonify(result), status_code
 
+# liste retourne dernier kilometre, trie par plus grand
+@app.route('/voiture/<immat>/dernier_kilometrage', methods=['GET'])
+def kilometre_last(immat):
+    return jsonify(dernier_kilometrage(immat))
 
 if __name__ == '__main__':
     with app.app_context():

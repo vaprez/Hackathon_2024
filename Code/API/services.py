@@ -44,3 +44,7 @@ def post_kilometrage(immat, releve_km, source_releve):
 
 
     return True
+
+def dernier_kilometrage(immat):
+    dernier_releve = RelevesKilometres.query.filter_by(immat=immat).order_by(RelevesKilometres.releve_km.desc()).first()
+    return dernier_releve.to_dict() if dernier_releve else None
