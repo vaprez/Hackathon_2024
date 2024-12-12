@@ -17,7 +17,7 @@
 
 ## Statistiques Admin :
 - Avoir une liste de tous les vehicules avec une bar de recherche
-- Pouvoir observer les statistiques (nombre de kilomètres, empruinte carbonne, anomalies,maintenance)
+- Pouvoir observer les statistiques (nombre de kilomètres, emprunte carbonne, anomalies,maintenance)
 
 ## Profil Admin : 
 
