@@ -1,5 +1,74 @@
  > Application de gestion de flotte de véhicules
 
+# Menu 
+
+## Login :
+- se logger a son compte en fonction de son role
+
+## Tableau Admin : 
+- Visualiser la totalité des vehicules libres
+- Pour un véhicule libre assigner un conducteur ainsi que le trajet
+- Visualiser la totalité des vehicules occupé
+- Pour un vehicule occupé accéder aux informations (Conducteur,trajet,documents,)
+
+## Carte Admin :
+- Visualiser la totaliter des voitures en circulation d'une zone donné
+- Avoir des informations sur le trajet ainsi que le conducteur après un clic
+
+## Statistiques Admin :
+- Avoir une liste de tous les vehicules avec une bar de recherche
+- Pouvoir observer les statistiques (nombre de kilomètres, empruinte carbonne, anomalies,maintenance)
+
+## Profil Admin : 
+
+- Visualiser les informations admin
+
+
+## Tableau User :
+- Visualiser les affectations
+- Tracer du meilleur itineraire entre le point A et B
+
+## Carte User :
+- Visualiser le trajet entre le point A et le point B
+
+## Inspection : 
+- Prise de photos
+- Enregistrement de photos ainsi qu'un message d'etat
+
+## Profil User :
+- Visualiser les informations utilisateur
+- visualiser les documents utilisateurs
+
+
+# Fonctionnalités :
+
+- Suivi en temps réels la position des vehicules
+- Calcul du meilleur itineraire pour un point donné (utilisateur)
+- 
+- kilométrage pour la plannification d'une maintenance préventive
+- Statistiques globales 
+
+
+# Bonus : 
+- Differencier les types de vehicules(electriques,moteur,...)
+
+# Interface :
+
+## Temps réels : 
+ - Page avec une carte permettant de visualiser une zone donnée avec les vehicules en temps réels
+ - Avoir le details d'un véhicule (informations concernant vehicule,conducteur,trajet)
+
+## Statistiques : 
+- Visualiser les stats du parc
+
+## Inspection : 
+- Prise de photo du vehicule ainsi que déclaration des anomalies,..
+
+## Utilisateurs : 
+- Calcul du meilleur itinéraires pour un trajet
+- Reservation de véhicule
+- Covoiturage
+
 ## Suivi des émissions et performance énergétique
 
 ### Optimisation des trajets pour minimiser la consommation :
