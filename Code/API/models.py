@@ -52,7 +52,7 @@ class RelevesKilometres(db.Model):
 
 class Typedefauts(db.Model):
     __tablename__ = 'typedefauts' 
-    id_defaut = db.Column(db.Integer, primary_key=True)
+    id_defaut = db.Column(db.Integer, primary_key=True, autoincrement=True)
     categorie = db.Column(db.String(20), nullable=False)
     def to_dict(self):
         return {
@@ -64,7 +64,7 @@ class Typedefauts(db.Model):
 
 class Defautsremarque(db.Model):
     __tablename__ = 'defautsremarque' 
-    id_releve = db.Column(db.Integer, primary_key=True)
+    id_releve = db.Column(db.Integer, primary_key=True, autoincrement=True)
     immat = db.Column(db.String(20), nullable=False)
     date_remarque = db.Column(db.Date, nullable=False)
     id_categorie = db.Column(db.Integer, nullable=False)
@@ -80,3 +80,4 @@ class Defautsremarque(db.Model):
             'commentaire_libre': self.commentaire_libre,
             'categorie': defaut.categorie if defaut else None
         }
+
