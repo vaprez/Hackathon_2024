@@ -1,6 +1,7 @@
 -- Voitures Table
 CREATE TABLE Voitures (
     immat VARCHAR(20) PRIMARY KEY,
+    modele VARCHAR(50) NOT NULL,
     propulsion VARCHAR(50) NOT NULL,
     nb_places INTEGER NOT NULL,
     autonomie_theorique INTEGER NOT NULL,
