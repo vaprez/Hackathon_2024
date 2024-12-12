@@ -14,3 +14,9 @@
 - get_vehicule_by_immat(toutes les information)
 - create_anomalie(immat,id_categorie,commentaire) 
 - create_releve_km(immat,km)
+
+
+## Oral : 
+
+- Pour la reconnaissance d'image pour les images sombres on utilise un algorithmes d'ajout de contraste 
+- 
