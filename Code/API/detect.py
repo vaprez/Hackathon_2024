@@ -130,20 +130,6 @@ def kilommetrage_recognition(image_path):
         print("Aucun kilométrage détecté avec un score supérieur à 0.70.")
         return None
 
-image_path = 'C:\Master2\Hackathon_2024\Code\API\images\plaque1.jpeg'
-#image_path1 = 'C:\Master2\Hackathon_2024\Code\API\images\compteur1.jpeg'
-
-# Appeler la fonction
-detected_plate = immat_recognition(image_path)
-#detected_plate1 = kilommetrage_recognition(image_path1)
-
-# Afficher le résultat
-if detected_plate:
-    print(f"Plaque détectée : {detected_plate}")
-else:
-    print("Aucune plaque détectée dans l'image.")
-
-
 
 
 def base64_to_image(base64_string):
