@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: car_fleet_user
       POSTGRES_PASSWORD: edfCorsica
     ports:
-      - "5432:5432"
+      - "5430:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
