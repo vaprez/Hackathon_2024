@@ -42,11 +42,12 @@ def post_kilometrage(immat, releve_km, source_releve):
     # Retourner le relevé créé
     return new_releve.to_dict(), 201
 
-
+#recuperer les defauts d'un voiture
 def get_defauts_veh(immat):
     defauts_veh = Defautsremarque.query.filter_by(immat=immat).all()
     return [defaut.to_dict() for defaut in defauts_veh]
 
+#ajouter des defauts a un vehicule
 def post_defaut_veh(immat, id_defaut, commentaire_libre):
      # Vérifier que la voiture existe
     voiture = Voiture.query.filter_by(immat=immat).first()
@@ -61,7 +62,7 @@ def post_defaut_veh(immat, id_defaut, commentaire_libre):
     )
     db.session.add(new_defaut)
     db.session.commit()
-    return {'message': 'Defaut ajouté avec succès'}
+    return {'message': 'Defauts ajouté avec succès'}, 201
 
 
 

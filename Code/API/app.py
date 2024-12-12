@@ -59,10 +59,10 @@ def kilometre_last(immat):
 @app.route('/voiture/add_defauts', methods=['POST'])
 def add_defaut_veh():
     data = request.get_json()
-    
+    print(data)
     # defauts_veh_list = []
     for defaut_veh in data:
-        
+        print(defaut_veh)
          # Vérifier que les champs obligatoires sont présents
         if not defaut_veh or 'immat' not in defaut_veh or 'id_defaut' not in defaut_veh or 'commentaire_libre' not in defaut_veh :
             return jsonify({'error': 'Les champs "immat", "commentaire_libre" et "id_defaut" sont obligatoires.'}), 400
