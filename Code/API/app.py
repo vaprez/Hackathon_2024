@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from models import db, Voiture
-from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage, get_defauts_veh, post_defaut_veh    
+from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage, get_defauts_veh, post_defaut_veh, get_destinations, ajout_reservations, reservations_recherche
 from detect import *
 
 app = Flask(__name__)
@@ -112,6 +112,47 @@ def vehicule_km():
     image_path = save_image(image,extension)
     detected_km = kilommetrage_recognition(image_path)
     return jsonify(detected_km)
+
+@app.route('/destinations', methods=['GET'])
+def destinations():
+    return jsonify(get_destinations())
+
+@app.route('/reservations', methods=['POST'])
+def post_reservations():
+    data = request.get_json()
+    depart = data.get("depart")
+    arrivee = data.get("arrivee")
+    date_debut = data.get("date_debut")
+    date_fin = data.get("date_fin")
+    nb_personnes = data.get("nb_personnes")
+    immatriculation = data.get("immat")
+    nom_utilisateur = data.get("nom_utilisateur")
+
+    # Validation des données
+    if not (depart and arrivee and date_debut and date_fin and nb_personnes and immatriculation and nom_utilisateur):
+        return jsonify({"error": "Tous les champs sont requis."}), 400
+
+    Resultats = ajout_reservations(depart,arrivee,date_debut,date_fin,nb_personnes,immatriculation,nom_utilisateur)
+
+    return Resultats
+
+
+@app.route('/search_reservations',methods=['POST'])
+def search_reservations():
+    data = request.get_json()
+    depart = data.get("depart")
+    arrivee = data.get("arrivee")
+    date_debut = data.get("date_debut")
+    date_fin = data.get("date_fin")
+    nb_personnes = data.get("nb_personnes")
+
+    if nb_personnes is None or depart is None or arrivee is None or date_debut is None or date_fin is None:
+                return jsonify({"error": "Veuillez fournir 'nb_personnes', 'depart', 'arrivee', 'date_debut' et 'date_fin'."}), 400
+
+    resultats = reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes)
+
+    return resultats
+
 
 
 if __name__ == '__main__':

@@ -1,6 +1,3 @@
-@app.route('/destinations', methods=['GET'])
-def destinations():
-    return jsonify(get_destinations())
 
 @app.route('/search_reservations',methods=['POST'])
 def search_reservations():
@@ -19,24 +16,6 @@ def search_reservations():
     return resultats
 
 @app.route('/reservations', methods=['POST'])
-def post_reservations():
-     data = request.json
-     depart = data.get("depart")
-     arrive = data.get("arrive")
-     date_debut = data.get("date_debut")
-     date_fin = data.get("date_fin")
-     nb_personnes = data.get("nb_personnes")
-     immatriculation = data.get("immat")
-     nom_utilisateur = data.get("nom_utilisateur")
-
-     # Validation des données
-     if not (depart and arrive and date_debut and date_fin and nb_personnes and immatriculation and nom_utilisateur):
-         return jsonify({"error": "Tous les champs sont requis."}), 400
-
-     Resultats = post_reservations(depart,arrive,date_debut,date_fin,nb_personnes,immat,nom_utilisateur)
-
-     return Resultats
-
 
 #recupérer la distance entre deux endroits sur une map
 def get_distance(origin, destination):
