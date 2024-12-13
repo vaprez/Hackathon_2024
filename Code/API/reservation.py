@@ -38,12 +38,40 @@ def post_reservations():
      return Resultats
 
 
+#recupérer la distance entre deux endroits sur une map
+def get_distance(origin, destination):
+
+    try:
+        # Appeler l'API Google Maps Distance Matrix
+        response = gmaps.distance_matrix(origin, destination)
+
+        # Extraire les données pertinentes (distance et durée)
+        origin_address = response['origin_addresses'][0]
+        destination_address = response['destination_addresses'][0]
+        distance_km = response['rows'][0]['elements'][0]['distance']['text']
+        duration = response['rows'][0]['elements'][0]['duration']['text']
+
+        result = {
+            "origin": origin_address,
+            "destination": destination_address,
+            "distance": distance_km,
+            "duration": duration
+        }
+        # # Retourner les résultats
+        return json.dumps(result)
+
+    except Exception as e:
+        print(f"Erreur : {e}")
+        return jsonify({"error": "Erreur lors du calcul de la distance"}), 500
+
+
+
 def get_destinations():
     destinations = destination_possibles.query.all()
     return [destination.to_dict() for destination in destinations]
 
 def search_reservations(depart,arrive,date_debut,date_fin,nb_personnes):
-    distance = 20
+    _,_,distance,_ = get_distance(depart,arrive)
 
 
     reservations = Planning_reservations.query.filter(
@@ -131,4 +159,6 @@ def post_reservations(depart,arrive,date_debut,date_fin,nb_personnes,immat,nom_u
     except Exception as e:
         session.rollback()
         return jsonify({"error": f"Une erreur est survenue lors de l'ajout de la réservation: {str(e)}"}), 500
+
+
 
