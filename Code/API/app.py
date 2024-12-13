@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, abort
-from models import db, Voiture
+from models import db
 from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage, get_defauts_veh, post_defaut_veh    
 from detect import *
 
@@ -7,6 +7,7 @@ app = Flask(__name__)
 app.json.sort_keys = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5430/car_fleet'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 # Initialisation de la base de données
 db.init_app(app)
@@ -114,7 +115,12 @@ def vehicule_km():
     return jsonify(detected_km)
 
 
+
+
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Crée les tables si elles n'existent pas
     app.run(debug=True)
+

@@ -1,6 +1,14 @@
 # services.py
+from flask import  jsonify, request, abort
 from models import db, Voiture, RelevesKilometres, Defautsremarque
 from datetime import date
+import googlemaps , json
+
+# Récupérer la clé API depuis les variables d'environnement
+GOOGLE_MAPS_API_KEY='AIzaSyBQPPO-ZmcSChn0Q7eRfleBX_aMRM-AUvY'
+
+# Initialiser Flask et le client Google Maps
+gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
 
 def get_voitures():
     voitures = Voiture.query.all()
@@ -65,7 +73,37 @@ def post_defaut_veh(immat, id_defaut, commentaire_libre):
     return {'message': 'Defaut ajouté avec succès'}, 201
 
 
-
 def dernier_kilometrage(immat):
     dernier_releve = RelevesKilometres.query.filter_by(immat=immat).order_by(RelevesKilometres.releve_km.desc()).first()
     return dernier_releve.to_dict() if dernier_releve else None
+
+
+
+#recupérer la distance entre deux endroits sur une map
+def get_distance(origin, destination):
+
+    try:
+        # Appeler l'API Google Maps Distance Matrix
+        response = gmaps.distance_matrix(origin, destination)
+
+        # Extraire les données pertinentes (distance et durée)
+        origin_address = response['origin_addresses'][0]
+        destination_address = response['destination_addresses'][0]
+        distance_km = response['rows'][0]['elements'][0]['distance']['text']
+        duration = response['rows'][0]['elements'][0]['duration']['text']
+
+        result = {
+            "origin": origin_address,
+            "destination": destination_address,
+            "distance": distance_km,
+            "duration": duration
+        }
+        # # Retourner les résultats
+        return json.dumps(result)
+    
+    except Exception as e:
+        print(f"Erreur : {e}")
+        return jsonify({"error": "Erreur lors du calcul de la distance"}), 500
+
+
+print(get_distance('Corte','Ajaccio'))
