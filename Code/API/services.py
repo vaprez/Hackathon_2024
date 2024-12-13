@@ -1,14 +1,18 @@
 # services.py
-from flask import  jsonify, request, abort
+from flask import  jsonify
 from models import db, Voiture, RelevesKilometres, Defautsremarque
 from datetime import date
-import googlemaps , json
+import googlemaps , json,requests
 
 # Récupérer la clé API depuis les variables d'environnement
 GOOGLE_MAPS_API_KEY='AIzaSyBQPPO-ZmcSChn0Q7eRfleBX_aMRM-AUvY'
 
 # Initialiser Flask et le client Google Maps
 gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
+
+#url de l'API  de calcul d'émission de CO2
+urlCO2E = "https://carbonsutra1.p.rapidapi.com/vehicle_estimate_by_type" 
+
 
 def get_voitures():
     voitures = Voiture.query.all()
@@ -107,3 +111,24 @@ def get_distance(origin, destination):
 
 
 # print(get_distance('Corte','Ajaccio'))
+
+
+def get_co2_emission(distance_km):
+    payload = {
+        "vehicle_type": "Car-Type-LowerMedium",
+        "fuel_type": "Petrol",
+        "distance_value": distance_km,
+        "distance_unit": "km"
+        }
+    co2headers = {
+        "x-rapidapi-key": "730439462fmsh551cfcba5340416p1b46c1jsnfdb107cc22db",
+        "x-rapidapi-host": "carbonsutra1.p.rapidapi.com",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Bearer fQ98oU704xFvsnXcQLVDbpeCJHPglG1DcxiMLKfpeNEMGumlbzVf1lCI6ZBx"
+    }
+
+    response = requests.post(urlCO2E, data=payload, headers=co2headers)
+
+    return response.json()
+
+#print(get_co2_emission(100))
