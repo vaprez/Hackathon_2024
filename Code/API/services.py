@@ -106,4 +106,4 @@ def get_distance(origin, destination):
         return jsonify({"error": "Erreur lors du calcul de la distance"}), 500
 
 
-print(get_distance('Corte','Ajaccio'))
+# print(get_distance('Corte','Ajaccio'))
