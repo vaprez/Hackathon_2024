@@ -5,7 +5,7 @@ from detect import *
 
 app = Flask(__name__)
 app.json.sort_keys = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5430/car_fleet'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5432/car_fleet'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -66,11 +66,11 @@ def kilometre_last(immat):
 @app.route('/voiture/add_defauts', methods=['POST'])
 def add_defaut_veh():
     data = request.get_json()
-    print(data)
+    # print(data)
     # defauts_veh_list = []
     for defaut_veh in data:
-        print(defaut_veh)
-         # Vérifier que les champs obligatoires sont présents
+        # print(defaut_veh)
+        # Vérifier que les champs obligatoires sont présents
         if not defaut_veh or 'immat' not in defaut_veh or 'id_defaut' not in defaut_veh or 'commentaire_libre' not in defaut_veh :
             return jsonify({'error': 'Les champs "immat", "commentaire_libre" et "id_defaut" sont obligatoires.'}), 400
         
@@ -80,7 +80,7 @@ def add_defaut_veh():
 
         result, status_code = post_defaut_veh(immat, id_defaut, commentaire_libre)
  
-        return jsonify(result),status_code
+    return jsonify(result),status_code
 
 
 # Afficher les defauts d'un véhicule
