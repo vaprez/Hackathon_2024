@@ -62,7 +62,7 @@ def post_defaut_veh(immat, id_defaut, commentaire_libre):
     )
     db.session.add(new_defaut)
     db.session.commit()
-    return {'message': 'Defauts ajouté avec succès'}, 201
+    return {'message': 'Defaut ajouté avec succès'}, 201
 
 
 

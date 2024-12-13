@@ -50,7 +50,6 @@ class RelevesKilometres(db.Model):
         }
 
 
-
 class Typedefauts(db.Model):
     __tablename__ = 'typedefauts' 
     id_defaut = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -61,7 +60,6 @@ class Typedefauts(db.Model):
             'categorie': self.categorie,
         }
     
-
 
 
 class Defautsremarque(db.Model):
@@ -82,3 +80,4 @@ class Defautsremarque(db.Model):
             'commentaire_libre': self.commentaire_libre,
             'categorie': defaut.categorie if defaut else None
         }
+
