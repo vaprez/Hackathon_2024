@@ -5,8 +5,9 @@ from detect import *
 
 app = Flask(__name__)
 app.json.sort_keys = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5430/car_fleet'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5432/car_fleet'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 # Initialisation de la base de données
 db.init_app(app)
@@ -82,7 +83,8 @@ def add_defaut_veh():
 
         result, status_code = post_defaut_veh(immat, id_defaut, commentaire_libre)
 
-        return jsonify(result),status_code
+ 
+    return jsonify(result),status_code
 
 
 # Afficher les defauts d'un véhicule
@@ -169,7 +171,12 @@ def search_reservations():
 
 
 
+
+
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Crée les tables si elles n'existent pas
     app.run(debug=True)
+

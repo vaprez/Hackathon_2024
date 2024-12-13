@@ -2,10 +2,13 @@
 from models import db, Voiture, RelevesKilometres, Defautsremarque, Destination, PlanningReservation, Typedefauts
 from datetime import date
 from flask import jsonify
-import googlemaps , json
+import googlemaps , json, requests
 
 GOOGLE_MAPS_API_KEY='AIzaSyBQPPO-ZmcSChn0Q7eRfleBX_aMRM-AUvY'
 gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
+
+#url de l'API  de calcul d'émission de CO2
+urlCO2E = "https://carbonsutra1.p.rapidapi.com/vehicle_estimate_by_type" 
 
 
 def get_voitures():
@@ -52,11 +55,12 @@ def post_kilometrage(immat, releve_km, source_releve):
     # Retourner le relevé créé
     return new_releve.to_dict(), 201
 
-
+#recuperer les defauts d'un voiture
 def get_defauts_veh(immat):
     defauts_veh = Defautsremarque.query.filter_by(immat=immat).all()
     return [defaut.to_dict() for defaut in defauts_veh]
 
+#ajouter des defauts a un vehicule
 def post_defaut_veh(immat, id_defaut, commentaire_libre):
      # Vérifier que la voiture existe
     voiture = Voiture.query.filter_by(immat=immat).first()
@@ -134,7 +138,6 @@ def get_distance(origin, destination):
         return jsonify({"error": "Erreur lors du calcul de la distance"}), 500
 
 
-
 def reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes):
     destDepart = Destination.query.get(depart)
     destArrivee = Destination.query.get(arrivee)
@@ -199,3 +202,24 @@ def reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes):
         return jsonify({"reservations_covoiturage": resultats_covoiturage},{"vehicules_disponibles": vehicules_valides})
     else:
         return jsonify([])
+
+
+def get_co2_emission(distance_km):
+    payload = {
+        "vehicle_type": "Car-Type-LowerMedium",
+        "fuel_type": "Petrol",
+        "distance_value": distance_km,
+        "distance_unit": "km"
+        }
+    co2headers = {
+        "x-rapidapi-key": "730439462fmsh551cfcba5340416p1b46c1jsnfdb107cc22db",
+        "x-rapidapi-host": "carbonsutra1.p.rapidapi.com",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Bearer fQ98oU704xFvsnXcQLVDbpeCJHPglG1DcxiMLKfpeNEMGumlbzVf1lCI6ZBx"
+    }
+
+    response = requests.post(urlCO2E, data=payload, headers=co2headers)
+
+    return response.json()
+
+#print(get_co2_emission(100))
