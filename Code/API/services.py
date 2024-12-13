@@ -1,6 +1,12 @@
 # services.py
-from models import db, Voiture, RelevesKilometres, Defautsremarque
+from models import db, Voiture, RelevesKilometres, Defautsremarque, Destination, PlanningReservation
 from datetime import date
+from flask import jsonify
+import googlemaps , json
+
+GOOGLE_MAPS_API_KEY='AIzaSyBQPPO-ZmcSChn0Q7eRfleBX_aMRM-AUvY'
+gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
+
 
 def get_voitures():
     voitures = Voiture.query.all()
@@ -63,8 +69,128 @@ def post_defaut_veh(immat, id_defaut, commentaire_libre):
     db.session.commit()
     return {'message': 'Defaut ajouté avec succès'}, 201
 
-
+def get_destinations():
+    destinations = Destination.query.all()
+    return [destination.to_dict() for destination in destinations]
 
 def dernier_kilometrage(immat):
     dernier_releve = RelevesKilometres.query.filter_by(immat=immat).order_by(RelevesKilometres.releve_km.desc()).first()
     return dernier_releve.to_dict() if dernier_releve else None
+
+def ajout_reservations(depart,arrivee,date_debut,date_fin,nb_personnes,immatriculation,nom_utilisateur):
+    # Vérifier si le véhicule existe
+    vehicule = Voiture.query.get(immatriculation)
+    if not vehicule:
+         return jsonify({"error": "Le véhicule avec cette immatriculation n'existe pas."}), 404
+
+    # Ajouter la réservation dans la base de données
+    nouvelle_reservation = PlanningReservation(
+        depart = depart,
+        arrivee = arrivee,
+        immat=immatriculation,
+        date_debut=date_debut,
+        date_fin=date_fin,
+        nb_places_reserves=nb_personnes,
+        nom_utilisateur=nom_utilisateur
+    )
+
+    try:
+        db.session.add(nouvelle_reservation)
+        db.session.commit()
+        return jsonify({"message": "Réservation ajoutée avec succès.", "reservation_id": nouvelle_reservation.id_res}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Une erreur est survenue lors de l'ajout de la réservation: {str(e)}"}), 500
+
+
+#recupérer la distance entre deux endroits sur une map
+def get_distance(origin, destination):
+
+    try:
+        # Appeler l'API Google Maps Distance Matrix
+        response = gmaps.distance_matrix(origin, destination)
+
+        # Extraire les données pertinentes (distance et durée)
+        origin_address = response['origin_addresses'][0]
+        destination_address = response['destination_addresses'][0]
+        distance_km = response['rows'][0]['elements'][0]['distance']['text']
+        duration = response['rows'][0]['elements'][0]['duration']['text']
+
+        result = {
+            "origin": origin_address,
+            "destination": destination_address,
+            "distance": distance_km,
+            "duration": duration
+        }
+        # # Retourner les résultats
+        return distance_km
+
+    except Exception as e:
+        print(f"Erreur : {e}")
+        return jsonify({"error": "Erreur lors du calcul de la distance"}), 500
+
+
+
+
+
+def reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes):
+    distance = get_distance(depart,arrivee)
+
+
+    reservations = PlanningReservation.query.filter(
+    PlanningReservation.date_debut == date_debut,
+    PlanningReservation.depart == depart,
+    PlanningReservation.arrivee == arrivee).all()
+
+    resultats_covoiturage = []
+    for reservation in reservations:
+        # Récupérer le véhicule associé
+        voiture = Voiture.query.filter_by(immat=reservation.immat).first()
+        if voiture:
+            places_disponibles = voiture.nb_places - reservation.nb_places_reserves
+            if places_disponibles >= nb_personnes:
+                # Ajouter la réservation valide aux résultats
+                resultats_covoiturage.append({
+                    "id_res": reservation.id_res,
+                    "immat": reservation.immat,
+                    "date_debut": reservation.date_debut.strftime("%d/%m/%Y"),
+                    "date_fin": reservation.date_fin.strftime("%d/%m/%Y"),
+                    "nb_places_disponibles": places_disponibles,
+                    "nom_utilisateur": reservation.nom_utilisateur,
+                    "depart" : reservation.depart,
+                    "arrivee" : reservation.arrivee
+                })
+
+    # Filtrer les véhicules selon le nombre de places
+    vehicules_disponibles = Voiture.query.filter(
+        Voiture.nb_places > nb_personnes
+    ).all()
+
+     # Filtrer les véhicules électriques avec une autonomie suffisante
+    vehicules_valides = []
+    for vehicule in vehicules_disponibles:
+         if vehicule.propulsion.lower() == "électrique":
+             # Vérifier si l'autonomie est suffisante
+             if vehicule.autonomie_theorique >= (distance * 2):
+                 vehicules_valides.append({
+                     "immat": vehicule.immat,
+                     "modele": vehicule.modele,
+                     "propulsion": vehicule.propulsion,
+                     "nb_places": vehicule.nb_places,
+                     "autonomie_theorique": vehicule.autonomie_theorique
+                 })
+         else:
+             # Ajouter directement les véhicules thermiques
+             vehicules_valides.append({
+                 "immat": vehicule.immat,
+                 "modele": vehicule.modele,
+                 "propulsion": vehicule.propulsion,
+                 "nb_places": vehicule.nb_places,
+                 "autonomie_theorique": vehicule.autonomie_theorique
+             })
+
+    # Retourner les résultats
+    if resultats_covoiturage and vehicules_valides :
+        return jsonify({"reservations_covoiturage": resultats_covoiturage},{"vehicules_disponibles": vehicules_valides})
+    else:
+        return jsonify({"message": "Aucune réservation disponible pour ces critères."})

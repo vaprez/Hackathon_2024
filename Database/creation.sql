@@ -15,8 +15,8 @@ CREATE TABLE Voitures (
 CREATE TABLE Destinations (
     id_destination SERIAL PRIMARY KEY,
     nom_destination VARCHAR(200) NOT NULL,
-    lat DECIMAL(12,11) NOT NULL,
-    lon DECIMAL(12,11) NOT NULL
+    lat double precision NOT NULL,
+    lon double precision NOT NULL
 );
 
 -- RelevesKilometres Table
@@ -54,5 +54,9 @@ CREATE TABLE PlanningReservation (
     date_fin DATE NOT NULL,
     nb_places_reserves INTEGER NOT NULL,
     nom_utilisateur VARCHAR(100) NOT NULL,
-    FOREIGN KEY (immat) REFERENCES Voitures(immat)
+    depart INTEGER NOT NULL,  -- Nouvelle colonne
+    arrivee INTEGER NOT NULL, -- Nouvelle colonne
+    FOREIGN KEY (immat) REFERENCES Voitures(immat),
+    FOREIGN KEY (depart) REFERENCES Destinations(id_destination),
+    FOREIGN KEY (arrivee) REFERENCES Destinations(id_destination)
 );
