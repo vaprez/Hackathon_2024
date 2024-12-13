@@ -10,7 +10,7 @@ export function useFileUpload(
     try {
       const image = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
-        quality: 0.5,
+        quality: 0.2,
       });
       if (image.canceled) return;
 
@@ -37,7 +37,7 @@ export function useFileUpload(
     try {
       const image = await ImagePicker.launchCameraAsync({
         mediaTypes: "images",
-        quality: 0.5,
+        quality: 0.4,
       });
 
       if (image.canceled) return;

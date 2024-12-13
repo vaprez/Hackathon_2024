@@ -1,3 +1,4 @@
+import Center from "@/components/Center";
 import StyledButton from "@/components/StyledButton";
 import Theme from "@/constants/Theme";
 import { AntDesign } from "@expo/vector-icons";
@@ -104,7 +105,11 @@ export default function AddFaultsScreen() {
   };
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return (
+      <Center>
+        <Text>Chargement...</Text>
+      </Center>
+    );
   }
 
   return (

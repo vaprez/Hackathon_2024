@@ -3,12 +3,7 @@ import StyledButton from "@/components/StyledButton";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-import {
-  router,
-  Stack,
-  useLocalSearchParams,
-  useNavigation,
-} from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -35,7 +30,6 @@ type DefautsRemarque = {
 
 export default function DetailsScreen() {
   const { registration } = useLocalSearchParams<ScreenParams>();
-  const nav = useNavigation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [defauts, setDefauts] = useState<DefautsRemarque[]>([]);
@@ -82,6 +76,14 @@ export default function DetailsScreen() {
       ]
     );
   };
+
+  if (isLoading) {
+    return (
+      <Center>
+        <Text>Chargement...</Text>
+      </Center>
+    );
+  }
 
   return (
     <View style={styles.container}>
