@@ -1,5 +1,5 @@
 # services.py
-from models import db, Voiture, RelevesKilometres, Defautsremarque, Destination, PlanningReservation
+from models import db, Voiture, RelevesKilometres, Defautsremarque, Destination, PlanningReservation, Typedefauts
 from datetime import date
 from flask import jsonify
 import googlemaps , json
@@ -16,6 +16,10 @@ def get_voiture(immat):
     voiture = Voiture.query.get(immat)
     if voiture:
         return voiture.to_dict()
+
+def get_typedefauts():
+    defauts = Typedefauts.query.all()
+    return [defaut.to_dict() for defaut in defauts]
 
 def get_kilometrage(immat):
     releves = RelevesKilometres.query.filter_by(immat=immat).all()
@@ -119,23 +123,24 @@ def get_distance(origin, destination):
         result = {
             "origin": origin_address,
             "destination": destination_address,
-            "distance": distance_km,
+            "distance": int(distance_km.replace(" km", "")),
             "duration": duration
         }
         # # Retourner les résultats
-        return distance_km
-
+        return json.dumps(result)
+    
     except Exception as e:
         print(f"Erreur : {e}")
         return jsonify({"error": "Erreur lors du calcul de la distance"}), 500
 
 
 
-
-
 def reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes):
-    distance = get_distance(depart,arrivee)
-
+    destDepart = Destination.query.get(depart)
+    destArrivee = Destination.query.get(arrivee)
+    
+    distances= get_distance(destDepart.nom_destination,destArrivee.nom_destination)
+    distance = json.loads(distances)["distance"]
 
     reservations = PlanningReservation.query.filter(
     PlanningReservation.date_debut == date_debut,
@@ -148,7 +153,7 @@ def reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes):
         voiture = Voiture.query.filter_by(immat=reservation.immat).first()
         if voiture:
             places_disponibles = voiture.nb_places - reservation.nb_places_reserves
-            if places_disponibles >= nb_personnes:
+            if int(places_disponibles) >= int(nb_personnes):
                 # Ajouter la réservation valide aux résultats
                 resultats_covoiturage.append({
                     "id_res": reservation.id_res,
@@ -193,4 +198,4 @@ def reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes):
     if resultats_covoiturage and vehicules_valides :
         return jsonify({"reservations_covoiturage": resultats_covoiturage},{"vehicules_disponibles": vehicules_valides})
     else:
-        return jsonify({"message": "Aucune réservation disponible pour ces critères."})
+        return jsonify([])

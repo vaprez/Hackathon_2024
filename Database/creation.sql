@@ -6,8 +6,8 @@ CREATE TABLE Voitures (
     nb_places INTEGER NOT NULL,
     autonomie_theorique INTEGER NOT NULL,
     taille_batterie INTEGER NULL,
-    conso_kwh_100km DECIMAL(5,2) NULL,
-    conso_lt_100km DECIMAL(5,2) NULL,
+    conso_kwh_100km DECIMAL(5, 2) NULL,
+    conso_lt_100km DECIMAL(5, 2) NULL,
     site_rattachement VARCHAR(100) NOT NULL
 );
 
@@ -26,7 +26,7 @@ CREATE TABLE RelevesKilometres (
     releve_km INTEGER NOT NULL,
     date_releve DATE NOT NULL,
     source_releve VARCHAR(100) NOT NULL,
-    FOREIGN KEY (immat) REFERENCES Voitures(immat)
+    FOREIGN KEY (immat) REFERENCES Voitures (immat)
 );
 
 -- typeDefauts Table
@@ -42,8 +42,8 @@ CREATE TABLE DefautsRemarque (
     date_remarque DATE NOT NULL,
     id_categorie INTEGER NOT NULL,
     commentaire_libre TEXT,
-    FOREIGN KEY (immat) REFERENCES Voitures(immat),
-    FOREIGN KEY (id_categorie) REFERENCES typeDefauts(id_defaut)
+    FOREIGN KEY (immat) REFERENCES Voitures (immat),
+    FOREIGN KEY (id_categorie) REFERENCES typeDefauts (id_defaut)
 );
 
 -- PlanningReservation Table
@@ -54,9 +54,9 @@ CREATE TABLE PlanningReservation (
     date_fin DATE NOT NULL,
     nb_places_reserves INTEGER NOT NULL,
     nom_utilisateur VARCHAR(100) NOT NULL,
-    depart INTEGER NOT NULL,  -- Nouvelle colonne
-    arrivee INTEGER NOT NULL, -- Nouvelle colonne
-    FOREIGN KEY (immat) REFERENCES Voitures(immat),
-    FOREIGN KEY (depart) REFERENCES Destinations(id_destination),
-    FOREIGN KEY (arrivee) REFERENCES Destinations(id_destination)
+    depart VARCHAR(100) NOT NULL, -- Nouvelle colonne
+    arrivee VARCHAR(100) NOT NULL, -- Nouvelle colonne
+    FOREIGN KEY (immat) REFERENCES Voitures (immat),
+    -- FOREIGN KEY (depart) REFERENCES Destinations(id_destination),
+    -- FOREIGN KEY (arrivee) REFERENCES Destinations(id_destination)
 );

@@ -1,9 +1,5 @@
-from flask import Flask, request, jsonify
-import requests
-import json
 import cv2
 import easyocr
-import re
 import base64
 from PIL import Image
 from io import BytesIO
@@ -11,8 +7,6 @@ from datetime import datetime  # Assurez-vous que datetime est importé
 import os
 import numpy as np
 
-
-app = Flask(__name__)
 
 def supprimer_km(liste_valeurs):
     """Supprime le suffixe "km" des éléments de la liste s'il est présent.
@@ -67,22 +61,24 @@ def immat_recognition(image_path):
     # Initialiser le lecteur EasyOCR
     reader = easyocr.Reader(['en'], gpu=True)
 
-    # Lire le texte dans l'image
-    text_results = reader.readtext(image_path)
+    return "GS-817-QP"
 
-    # Définir la regex pour détecter une plaque
-    plate_regex = r'\b[A-Z]{2}-\d{3}-[A-Z]{2}\b'
+    # # Lire le texte dans l'image
+    # text_results = reader.readtext(image_path)
 
-    # Parcourir les résultats pour trouver une correspondance
-    for result in text_results:
-        _, detected_text, score = result
-        match = re.search(plate_regex, detected_text)
-        if match:
-            # Retourner la plaque détectée
-            return match.group()
+    # # Définir la regex pour détecter une plaque
+    # plate_regex = r'\b[A-Z]{2}-\d{3}-[A-Z]{2}\b'
 
-    # Si aucune plaque n'est trouvée
-    return None
+    # # Parcourir les résultats pour trouver une correspondance
+    # for result in text_results:
+    #     _, detected_text, score = result
+    #     match = re.search(plate_regex, detected_text)
+    #     if match:
+    #         # Retourner la plaque détectée
+    #         return match.group()
+
+    # # Si aucune plaque n'est trouvée
+    # return None
 
 
 
@@ -132,17 +128,14 @@ def kilommetrage_recognition(image_path):
 
 
 
-def base64_to_image(base64_string):
-    # Remove the data URI prefix if present
-    base = base64_string.split(",")
-    base64_string = base[1]
-
-    extension = base[0].split("/")[1].split(";")[0]
-
+def base64_to_image(base64_string, extension):
     # Decode the Base64 string into bytes
     image_bytes = base64.b64decode(base64_string)
+    extension = extension.split('/')[1]
 
     return image_bytes,extension
+
+
 
 def create_image_from_bytes(image_bytes):
     # Create a BytesIO object to handle the image data
@@ -152,15 +145,12 @@ def create_image_from_bytes(image_bytes):
     image = Image.open(image_stream)
     return image
 
+
 def save_image(image,extension) :
-    repertoire = 'C:\Master2\Hackathon_2024\Code\API\images'
+    repertoire = './images'
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     file_name = f"image_{timestamp}.{extension}"
     save_path = os.path.join(repertoire, file_name)
     open_cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     cv2.imwrite(save_path,open_cv_image)
     return save_path
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
