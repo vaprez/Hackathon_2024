@@ -5,7 +5,7 @@ from detect import *
 
 app = Flask(__name__)
 app.json.sort_keys = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5432/car_fleet'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5430/car_fleet'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 

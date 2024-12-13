@@ -54,9 +54,9 @@ CREATE TABLE PlanningReservation (
     date_fin DATE NOT NULL,
     nb_places_reserves INTEGER NOT NULL,
     nom_utilisateur VARCHAR(100) NOT NULL,
-    depart VARCHAR(100) NOT NULL, -- Nouvelle colonne
-    arrivee VARCHAR(100) NOT NULL, -- Nouvelle colonne
+    depart INT NOT NULL, -- Nouvelle colonne
+    arrivee INT NOT NULL, -- Nouvelle colonne
     FOREIGN KEY (immat) REFERENCES Voitures (immat),
-    -- FOREIGN KEY (depart) REFERENCES Destinations(id_destination),
-    -- FOREIGN KEY (arrivee) REFERENCES Destinations(id_destination)
+    FOREIGN KEY (depart) REFERENCES Destinations (id_destination),
+    FOREIGN KEY (arrivee) REFERENCES Destinations (id_destination)
 );
