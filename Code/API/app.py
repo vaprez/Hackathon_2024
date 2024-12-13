@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
-from models import db, Voiture
-from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage, get_defauts_veh, post_defaut_veh    
+from models import db
+from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage, get_defauts_veh, post_defaut_veh, get_typedefauts
 from detect import *
 
 app = Flask(__name__)
@@ -20,6 +20,11 @@ def hello_world():
 @app.route('/voitures', methods=['GET'])
 def voitures():
     return jsonify(get_voitures())
+
+
+@app.route('/typedefauts', methods=['GET'])
+def typedefauts():
+    return jsonify(get_typedefauts())
 
 
 @app.route('/voiture/<immat>', methods=['GET'])
@@ -65,20 +70,19 @@ def kilometre_last(immat):
 @app.route('/voiture/add_defauts', methods=['POST'])
 def add_defaut_veh():
     data = request.get_json()
-    
+
     # defauts_veh_list = []
     for defaut_veh in data:
-        
          # Vérifier que les champs obligatoires sont présents
         if not defaut_veh or 'immat' not in defaut_veh or 'id_defaut' not in defaut_veh or 'commentaire_libre' not in defaut_veh :
             return jsonify({'error': 'Les champs "immat", "commentaire_libre" et "id_defaut" sont obligatoires.'}), 400
-        
+
         immat = defaut_veh['immat']
         id_defaut = defaut_veh['id_defaut']
         commentaire_libre = defaut_veh['commentaire_libre']
 
         result, status_code = post_defaut_veh(immat, id_defaut, commentaire_libre)
- 
+
         return jsonify(result),status_code
 
 
@@ -93,12 +97,18 @@ def vehicule_imat():
     data = request.get_json()
     if not data or 'blob' not in data:
         return jsonify({'error': 'Aucune chaîne de texte trouvée dans le JSON'}), 400
+
     blob = data['blob']
-    image_bytes,extension = base64_to_image(blob)
+    extension = data["extension"]
+    image_bytes,extension = base64_to_image(blob,extension)
     image = create_image_from_bytes(image_bytes)
     image_path = save_image(image,extension)
     detected_plate = immat_recognition(image_path)
-    return jsonify(detected_plate)
+    print("detected_plate:",detected_plate)
+    if detected_plate:
+        return jsonify(detected_plate)
+    else:
+        return jsonify({'error': 'Aucune plaque détectée'}), 404
 
 
 @app.route('/vehicule/compteur',methods=['POST'])

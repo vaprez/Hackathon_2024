@@ -1,10 +1,14 @@
 # services.py
-from models import db, Voiture, RelevesKilometres, Defautsremarque
+from models import db, Voiture, RelevesKilometres, Defautsremarque, Typedefauts
 from datetime import date
 
 def get_voitures():
     voitures = Voiture.query.all()
     return [voiture.to_dict() for voiture in voitures]
+
+def get_typedefauts():
+    defauts = Typedefauts.query.all()
+    return [defaut.to_dict() for defaut in defauts]
 
 def get_voiture(immat):
     voiture = Voiture.query.get(immat)
@@ -55,14 +59,13 @@ def post_defaut_veh(immat, id_defaut, commentaire_libre):
     
     new_defaut = Defautsremarque(
         immat=immat,
-        date_remarque=date.today(),
+        date_remarque=date.today().strftime('%Y-%m-%d'),
         id_categorie=id_defaut,
         commentaire_libre=commentaire_libre
     )
     db.session.add(new_defaut)
     db.session.commit()
     return {'message': 'Defaut ajouté avec succès'}, 201
-
 
 
 def dernier_kilometrage(immat):

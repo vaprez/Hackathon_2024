@@ -59,7 +59,10 @@ def immat_recognition(image_path):
     :return: La plaque détectée (str) ou None si aucune plaque n'est trouvée.
     """
     # Charger l'image
+    print(image_path)
     img = cv2.imread(image_path)
+    img.show();
+
     if img is None:
         print(f"Impossible de charger l'image : {image_path}")
         return None
@@ -67,8 +70,11 @@ def immat_recognition(image_path):
     # Initialiser le lecteur EasyOCR
     reader = easyocr.Reader(['en'], gpu=True)
 
+    print('reading text...')
     # Lire le texte dans l'image
     text_results = reader.readtext(image_path)
+
+    print('text_results:', text_results)
 
     # Définir la regex pour détecter une plaque
     plate_regex = r'\b[A-Z]{2}-\d{3}-[A-Z]{2}\b'
@@ -132,15 +138,10 @@ def kilommetrage_recognition(image_path):
 
 
 
-def base64_to_image(base64_string):
-    # Remove the data URI prefix if present
-    base = base64_string.split(",")
-    base64_string = base[1]
-
-    extension = base[0].split("/")[1].split(";")[0]
-
+def base64_to_image(base64_string, extension):
     # Decode the Base64 string into bytes
     image_bytes = base64.b64decode(base64_string)
+    extension = extension.split('/')[1]
 
     return image_bytes,extension
 
@@ -153,7 +154,7 @@ def create_image_from_bytes(image_bytes):
     return image
 
 def save_image(image,extension) :
-    repertoire = 'C:\Master2\Hackathon_2024\Code\API\images'
+    repertoire = './images'
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     file_name = f"image_{timestamp}.{extension}"
     save_path = os.path.join(repertoire, file_name)
