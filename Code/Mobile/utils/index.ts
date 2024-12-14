@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
 
@@ -17,13 +16,6 @@ export const getFormattedDateString = (date: Date = new Date()): string => {
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${hours}-${minutes}-${seconds}_${day}-${month}-${year}`;
-};
-
-export const authAPI = async () => {
-  return axios.create({
-    baseURL: "http://gelk.fr:3000",
-    headers: {},
-  });
 };
 
 export const createFileObject = async (
