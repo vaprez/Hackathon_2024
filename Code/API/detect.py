@@ -61,24 +61,22 @@ def immat_recognition(image_path):
     # Initialiser le lecteur EasyOCR
     reader = easyocr.Reader(['en'], gpu=True)
 
-    return "GS-817-QP"
+    # Lire le texte dans l'image
+    text_results = reader.readtext(image_path)
 
-    # # Lire le texte dans l'image
-    # text_results = reader.readtext(image_path)
+    # Définir la regex pour détecter une plaque
+    plate_regex = r'\b[A-Z]{2}-\d{3}-[A-Z]{2}\b'
 
-    # # Définir la regex pour détecter une plaque
-    # plate_regex = r'\b[A-Z]{2}-\d{3}-[A-Z]{2}\b'
+    # Parcourir les résultats pour trouver une correspondance
+    for result in text_results:
+        _, detected_text, score = result
+        match = re.search(plate_regex, detected_text)
+        if match:
+            # Retourner la plaque détectée
+            return match.group()
 
-    # # Parcourir les résultats pour trouver une correspondance
-    # for result in text_results:
-    #     _, detected_text, score = result
-    #     match = re.search(plate_regex, detected_text)
-    #     if match:
-    #         # Retourner la plaque détectée
-    #         return match.group()
-
-    # # Si aucune plaque n'est trouvée
-    # return None
+    # Si aucune plaque n'est trouvée
+    return None
 
 
 
@@ -97,6 +95,7 @@ def kilommetrage_recognition(image_path):
     if img is None:
         print(f"Impossible de charger l'image : {image_path}")
         return None
+
 
     # Instance du lecteur OCR avec GPU désactivé si non nécessaire
     reader = easyocr.Reader(['en'], gpu=True)  # Changez gpu=True si vous avez une carte GPU compatible

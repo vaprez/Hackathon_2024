@@ -1,11 +1,15 @@
 from flask import Flask, jsonify, request, abort
-from models import db, Voiture
+from models import db
 from services import get_voitures, get_voiture, get_kilometrage, post_kilometrage, dernier_kilometrage, get_defauts_veh, post_defaut_veh, get_destinations, ajout_reservations, reservations_recherche,get_typedefauts
 from detect import *
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
 
 app = Flask(__name__)
 app.json.sort_keys = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://car_fleet_user:edfCorsica@localhost:5430/car_fleet'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -168,10 +172,6 @@ def search_reservations():
     resultats = reservations_recherche(depart,arrivee,date_debut,date_fin,nb_personnes)
 
     return resultats
-
-
-
-
 
 
 

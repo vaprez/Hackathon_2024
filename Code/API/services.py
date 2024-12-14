@@ -2,9 +2,13 @@
 from models import db, Voiture, RelevesKilometres, Defautsremarque, Destination, PlanningReservation, Typedefauts
 from datetime import date
 from flask import jsonify
-import googlemaps , json, requests
+import googlemaps , json, requests, os
+from dotenv import load_dotenv
 
-GOOGLE_MAPS_API_KEY='AIzaSyBQPPO-ZmcSChn0Q7eRfleBX_aMRM-AUvY'
+load_dotenv()  # take environment variables from .env.
+
+
+GOOGLE_MAPS_API_KEY=os.getenv("GOOGLE_MAPS_API_KEY")
 gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
 
 #url de l'API  de calcul d'émission de CO2

@@ -37,7 +37,7 @@ CREATE TABLE typeDefauts (
 
 -- DefautsRemarque Table
 CREATE TABLE DefautsRemarque (
-    id_releve SERIAL PRIMARY KEY,
+    id_remarque SERIAL PRIMARY KEY,
     immat VARCHAR(20) NOT NULL,
     date_remarque DATE NOT NULL,
     id_categorie INTEGER NOT NULL,

@@ -78,34 +78,34 @@ def search_reservations(depart,arrive,date_debut,date_fin,nb_personnes):
                 })
 
     # Filtrer les véhicules selon le nombre de places
-     vehicules_disponibles = Voiture.query.filter(
+    vehicules_disponibles = Voiture.query.filter(
         Voiture.nb_places >= nb_personnes
-     ).all()
+    ).all()
 
-     # Filtrer les véhicules électriques avec une autonomie suffisante
-     vehicules_valides = []
-     for vehicule in vehicules_disponibles:
-         if vehicule.propulsion.lower() == "électrique":
-             # Vérifier si l'autonomie est suffisante
-             if vehicule.autonomie_theorique >= (distance * 2):
-                 vehicules_valides.append({
-                     "id_vehicule": vehicule.id_vehicule,
-                     "immat": vehicule.immat,
-                     "modele": vehicule.modele,
-                     "propulsion": vehicule.propulsion,
-                     "nb_places": vehicule.nb_places,
-                     "autonomie_theorique": vehicule.autonomie_theorique
-                 })
-         else:
-             # Ajouter directement les véhicules thermiques
-             vehicules_valides.append({
-                 "id_vehicule": vehicule.id_vehicule,
-                 "immat": vehicule.immat,
-                 "modele": vehicule.modele,
-                 "propulsion": vehicule.propulsion,
-                 "nb_places": vehicule.nb_places,
-                 "autonomie_theorique": vehicule.autonomie_theorique
-             })
+    # Filtrer les véhicules électriques avec une autonomie suffisante
+    vehicules_valides = []
+    for vehicule in vehicules_disponibles:
+        if vehicule.propulsion.lower() == "électrique":
+            # Vérifier si l'autonomie est suffisante
+            if vehicule.autonomie_theorique >= (distance * 2):
+                vehicules_valides.append({
+                    "id_vehicule": vehicule.id_vehicule,
+                    "immat": vehicule.immat,
+                    "modele": vehicule.modele,
+                    "propulsion": vehicule.propulsion,
+                    "nb_places": vehicule.nb_places,
+                    "autonomie_theorique": vehicule.autonomie_theorique
+                })
+        else:
+            # Ajouter directement les véhicules thermiques
+            vehicules_valides.append({
+                "id_vehicule": vehicule.id_vehicule,
+                "immat": vehicule.immat,
+                "modele": vehicule.modele,
+                "propulsion": vehicule.propulsion,
+                "nb_places": vehicule.nb_places,
+                "autonomie_theorique": vehicule.autonomie_theorique
+            })
 
     # Retourner les résultats
     if resultats:
