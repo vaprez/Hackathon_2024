@@ -1,17 +1,22 @@
 import Center from "@/components/Center";
 import StyledButton from "@/components/StyledButton";
+import { API_URL } from "@/constants/Api";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
+import * as FileSystem from "expo-file-system";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -31,28 +36,80 @@ type DefautsRemarque = {
 export default function DetailsScreen() {
   const { registration } = useLocalSearchParams<ScreenParams>();
 
+  const [refetching, setRefetching] = useState(false);
+  const [dernierReleve, setDernierReleve] = useState<number | null>(null);
+  const [releveKm, setReleveKm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [defauts, setDefauts] = useState<DefautsRemarque[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefetching((p) => !p);
+    }, [])
+  );
 
   useEffect(() => {
     const fetchDefauts = async () => {
       if (!registration) return;
       try {
         const response = await axios.get<DefautsRemarque[]>(
-          `http://gelk.fr:5000/voiture/${registration}/defauts`
+          `${API_URL}/voiture/${registration}/defauts`
         );
         setDefauts(response.data);
         setIsLoading(false);
       } catch (error: any) {
-        console.error("Error fetching faults", error);
+        // console.error("Error fetching faults", error);
         Alert.alert("Error fetching faults", error.message);
       }
     };
+    const fetchDernierReleve = async () => {
+      if (!registration) return;
+      try {
+        const response = await axios.get<any>(
+          `${API_URL}/voiture/${registration}/dernier_kilometrage`
+        );
+        if (response.status == 200 && response.data) {
+          setDernierReleve(response.data.releve_km);
+        }
+      } catch (error: any) {
+        // console.error("Error fetching km", error);
+        Alert.alert("Error fetching km", error.message);
+      }
+    };
     fetchDefauts();
-  }, [registration]);
+    fetchDernierReleve();
+  }, [registration, refetching]);
 
   const { handleTakePicture } = useFileUpload(async (formData) => {
-    console.log("Uploading file", formData.get("file"));
+    try {
+      setIsLoading(true);
+      const file = formData.get("file") as {
+        uri: string;
+        type: string;
+        name: string;
+      } | null;
+      if (!file) return;
+
+      const base64 = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: "base64",
+      });
+
+      const response = await axios.post(`${API_URL}/vehicule/compteur`, {
+        blob: base64,
+        extension: file.type,
+      });
+      if (response.status == 200 && response.data) {
+        setIsLoading(false);
+        setReleveKm(response.data.toString());
+      }
+    } catch (error) {
+      setIsLoading(false);
+      // console.error(error);
+      Alert.alert(
+        "Erreur",
+        "Une erreur est survenue lors de la prise de photo"
+      );
+    }
   });
 
   const handleDeleteDefaut = (id_remarque: number) => {
@@ -77,83 +134,133 @@ export default function DetailsScreen() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <Center>
-        <Text>Chargement...</Text>
-      </Center>
+  const handleAddKilemetrage = () => {
+    if (!releveKm) return;
+    Alert.alert(
+      "Enregistrer le relevé kilométrique",
+      `Êtes-vous sûr de vouloir enregistrer le relevé kilométrique à ${releveKm} km ?`,
+      [
+        {
+          text: "Annuler",
+          style: "cancel",
+        },
+        {
+          text: "Enregistrer",
+          style: "default",
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              const response = await axios.post(
+                `${API_URL}/voiture/${registration}/kilometrage`,
+                {
+                  source_releve: "appli",
+                  releve_km: parseInt(releveKm),
+                }
+              );
+              if (response.status == 201) {
+                setIsLoading(false);
+                Alert.alert(
+                  "Relevé km enregistré",
+                  "Le relevé km a été enregistré avec succès."
+                );
+                setRefetching((p) => !p);
+              }
+            } catch (error: any) {
+              setIsLoading(false);
+              // console.error("Error saving km", error);
+              Alert.alert("Error saving km", error.message);
+            }
+          },
+        },
+      ]
     );
-  }
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.section}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Relevé km.</Text>
-          <Text>
-            Dernier relevé: <Text style={{ fontWeight: "bold" }}>13792 km</Text>
-          </Text>
-        </View>
-        <View style={styles.main}>
-          <View style={styles.inputContainer}>
-            <TextInput style={styles.input} placeholder="13210" />
-            <StyledButton label="Enregistrer" onPress={() => {}} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View style={styles.section}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Relevé km.</Text>
+            <Text>
+              Dernier relevé:{" "}
+              <Text style={{ fontWeight: "bold" }}>{dernierReleve} km</Text>
+            </Text>
           </View>
-          <StyledButton label="Prendre une photo" onPress={handleTakePicture} />
+          <View style={styles.main}>
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={releveKm}
+                style={styles.input}
+                onChangeText={setReleveKm}
+              />
+              <StyledButton
+                label="Enregistrer"
+                onPress={handleAddKilemetrage}
+              />
+            </View>
+            <StyledButton
+              label="Prendre une photo"
+              onPress={handleTakePicture}
+              isLoading={isLoading}
+            />
+          </View>
         </View>
-      </View>
 
-      <View style={[{ flex: 1, paddingBottom: 50 }, styles.section]}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>
-            Défauts du véhicule
-            {defauts.length > 0 && ` (${defauts.length})`}
-          </Text>
-          <TouchableOpacity
-            onPress={() =>
-              router.navigate({
-                pathname: "/(app)/vehicle/add-faults",
-                params: { registration },
-              })
-            }
-          >
-            <Ionicons size={26} name="add-circle-outline" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.main}>
-          <FlatList
-            data={defauts}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => handleDeleteDefaut(item.id_remarque)}
-              >
-                <View style={styles.card}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle}>{item.categorie}</Text>
-                    <Text style={styles.cardDate}>
-                      {new Date(item.date_remarque).toLocaleDateString()}
+        <View style={[{ flex: 1, paddingBottom: 50 }, styles.section]}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>
+              Défauts du véhicule
+              {defauts.length > 0 && ` (${defauts.length})`}
+            </Text>
+            <TouchableOpacity
+              onPress={() =>
+                router.navigate({
+                  pathname: "/(app)/vehicle/add-faults",
+                  params: { registration },
+                })
+              }
+            >
+              <Ionicons size={26} name="add-circle-outline" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.main}>
+            <FlatList
+              data={defauts}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => handleDeleteDefaut(item.id_remarque)}
+                >
+                  <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.cardTitle}>{item.categorie}</Text>
+                      <Text style={styles.cardDate}>
+                        {new Date(item.date_remarque).toLocaleDateString()}
+                      </Text>
+                    </View>
+                    <Text style={styles.cardText}>
+                      {item.commentaire_libre}
                     </Text>
                   </View>
-                  <Text style={styles.cardText}>{item.commentaire_libre}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-            keyExtractor={(_, idx) => idx.toString()}
-            ListEmptyComponent={() => (
-              <Center>
-                <Text>Aucun défaut enregistré. 😁</Text>
-              </Center>
-            )}
-          />
+                </TouchableOpacity>
+              )}
+              keyExtractor={(_, idx) => idx.toString()}
+              ListEmptyComponent={() => (
+                <Center>
+                  <Text>Aucun défaut enregistré. 😁</Text>
+                </Center>
+              )}
+            />
+          </View>
         </View>
-      </View>
 
-      <Stack.Screen
-        options={{
-          headerTitle: registration,
-        }}
-      />
-    </View>
+        <Stack.Screen
+          options={{
+            headerTitle: registration,
+          }}
+        />
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 

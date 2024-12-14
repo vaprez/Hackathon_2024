@@ -1,11 +1,21 @@
 import StyledButton from "@/components/StyledButton";
+import { API_URL } from "@/constants/Api";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
 export default function TabOneScreen() {
   const [registration, setRegistration] = useState<string>("");
@@ -25,13 +35,10 @@ export default function TabOneScreen() {
         encoding: "base64",
       });
 
-      const response = await axios.post(
-        "http://gelk.fr:5000/vehicule/immat_ocr",
-        {
-          blob: base64,
-          extension: file.type,
-        }
-      );
+      const response = await axios.post(`${API_URL}/vehicule/immat_ocr`, {
+        blob: base64,
+        extension: file.type,
+      });
       if (response.status == 200 && response.data) {
         setIsLoading(false);
         setRegistration(response.data);
@@ -47,6 +54,7 @@ export default function TabOneScreen() {
   });
 
   const handleSearch = () => {
+    if (!registration) return;
     router.navigate({
       pathname: "/(app)/vehicle/details",
       params: {
@@ -56,27 +64,63 @@ export default function TabOneScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <Text>Recherche par plaque d'immatriculation</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={registration}
-            placeholder="AB-123-CD"
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View>
+          <View style={styles.searchContainer}>
+            <Text>Recherche par plaque d'immatriculation</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                value={registration}
+                placeholder="AB-123-CD"
+                onChangeText={setRegistration}
+              />
+              <StyledButton
+                label="Rechercher"
+                onPress={handleSearch}
+                disabled={!registration}
+              />
+            </View>
+          </View>
+          <View style={styles.separator} />
+          <StyledButton
+            label="Prise de photo"
+            onPress={handleTakePicture}
+            isLoading={isLoading}
           />
-          <StyledButton label="Rechercher" onPress={handleSearch} />
         </View>
-      </View>
-      <View style={styles.separator} />
-      <StyledButton
-        label="Prise de photo"
-        onPress={handleTakePicture}
-        isLoading={isLoading}
-      />
 
-      <StatusBar style="light" />
-    </View>
+        <View style={{ gap: 20 }}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <Ionicons
+              name="information-circle"
+              size={24}
+              color="black"
+              style={{ marginBottom: 10 }}
+            />
+            <Text style={styles.title}>
+              Conseil pour prendre une bonne photo
+            </Text>
+          </View>
+          <View>
+            <Text style={{ fontSize: 16 }}>
+              - Cadrer le sujet au centre de l'image
+            </Text>
+            <Text style={{ fontSize: 16 }}>
+              - Assurez-vous que la plaque soit lisible
+            </Text>
+            <Text style={{ fontSize: 16 }}>
+              - Evitez les reflets et les ombres
+            </Text>
+            <Text style={{ fontSize: 16 }}>- Prenez la photo de près</Text>
+            <Text style={{ fontSize: 16 }}>- Rester stable</Text>
+          </View>
+        </View>
+
+        <StatusBar style="light" />
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -84,6 +128,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    gap: 50,
   },
   title: {
     fontSize: 20,

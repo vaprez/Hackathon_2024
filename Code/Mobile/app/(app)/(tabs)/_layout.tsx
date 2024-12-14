@@ -33,22 +33,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="inspection"
+        name="reservation"
         options={{
-          title: "EDF - Inspection des véhicules",
-          tabBarLabel: "Inspection",
+          title: "EDF - Réservation",
+          tabBarLabel: "Réserver",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="car-info" color={color} />
+            <TabBarIcon name="car-clock" color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="reservation"
+        name="trajet"
         options={{
-          title: "EDF - Réservation & Covoiturage",
-          tabBarLabel: "Réserver",
+          title: "EDF - Trajets",
+          tabBarLabel: "Trajets",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="car-clock" color={color} />
+            <TabBarIcon name="car-multiple" color={color} />
           ),
         }}
       />

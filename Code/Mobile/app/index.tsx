@@ -34,6 +34,15 @@ export default function LoginScreen() {
             secureTextEntry={true}
             placeholder="Mot de passe"
           />
+          <Text
+            style={{
+              fontSize: 12,
+              color: Theme.primary,
+              textDecorationLine: "underline",
+            }}
+          >
+            Mot de passe oublié ?
+          </Text>
           <StyledButton
             label="Se connecter"
             onPress={() => router.replace("/(app)/(tabs)")}

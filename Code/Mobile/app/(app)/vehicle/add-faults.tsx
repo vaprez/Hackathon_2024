@@ -1,17 +1,20 @@
 import Center from "@/components/Center";
 import StyledButton from "@/components/StyledButton";
+import { API_URL } from "@/constants/Api";
 import Theme from "@/constants/Theme";
-import { AntDesign } from "@expo/vector-icons";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import axios from "axios";
+import * as FileSystem from "expo-file-system";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
-  Platform,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -40,23 +43,59 @@ export default function AddFaultsScreen() {
   const [savedFaults, setSavedFaults] = useState<TypeDefautSaved[]>([]);
   const [comment, setComment] = useState("");
   const [isFocus, setIsFocus] = useState(false);
+  const [photo, setPhotos] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFaults = async () => {
       try {
         const response = await axios.get<TypeDefaut[]>(
-          "http://gelk.fr:5000/typedefauts"
+          `${API_URL}/typedefauts`
         );
         setFaults(response.data);
         setSelectedFault(response.data[0]);
         setIsLoading(false);
       } catch (error: any) {
-        console.error("Error fetching faults", error);
+        // console.error("Error fetching faults", error);
         Alert.alert("Error fetching faults", error.message);
       }
     };
     fetchFaults();
   }, []);
+
+  const { handleTakePicture } = useFileUpload(async (formData) => {
+    try {
+      setIsLoading(true);
+      const file = formData.get("file") as {
+        uri: string;
+        type: string;
+        name: string;
+      } | null;
+      if (!file) return;
+
+      const base64 = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: "base64",
+      });
+
+      const response = await axios.post(
+        `${API_URL}/vehicule/add_photo_defaut`,
+        {
+          blob: base64,
+          extension: file.type,
+        }
+      );
+      if (response.status == 200 && response.data) {
+        setIsLoading(false);
+        setPhotos(response.data.url);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      // console.error(error);
+      Alert.alert(
+        "Erreur",
+        "Une erreur est survenue lors de la prise de photo"
+      );
+    }
+  });
 
   const handleAddFaults = () => {
     // Vérifiez explicitement que selectedFault est défini
@@ -89,17 +128,13 @@ export default function AddFaultsScreen() {
         id_defaut: item.id_defaut,
         commentaire_libre: item.commentaire,
       }));
-      console.log("payload", payload);
-      const res = await axios.post(
-        "http://gelk.fr:5000/voiture/add_defauts",
-        payload
-      );
+      const res = await axios.post(`${API_URL}/voiture/add_defauts`, payload);
       if (res.status == 201) {
         Alert.alert("Défauts enregistrés avec succès");
         router.back();
       }
     } catch (error: any) {
-      console.error("Error saving faults", error);
+      // console.error("Error saving faults", error);
       Alert.alert("Error saving faults", error.message);
     }
   };
@@ -113,76 +148,85 @@ export default function AddFaultsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={{ gap: 20, flex: 1 }}>
-        <View style={styles.inputContainer}>
-          <Text>Prendre une photo</Text>
-          <StyledButton label="Prendre une photo" onPress={() => {}} />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text>Catégorie</Text>
-          <Dropdown
-            style={[
-              styles.dropdown,
-              isFocus && { borderColor: Theme.backgroud },
-            ]}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            data={faults}
-            search
-            maxHeight={300}
-            labelField="categorie"
-            valueField="id_defaut"
-            placeholder={!isFocus ? "Select item" : "..."}
-            searchPlaceholder="Rechercher..."
-            value={selectedFault}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={(item) => {
-              setSelectedFault(item);
-              setIsFocus(false);
-            }}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text>Commentaire</Text>
-          <TextInput
-            style={styles.input}
-            multiline
-            numberOfLines={3}
-            value={comment}
-            onChangeText={setComment}
-          />
-        </View>
-        <StyledButton
-          label="Ajouter"
-          onPress={handleAddFaults}
-          variant="secondary"
-        />
-      </View>
-
-      <View style={{ gap: 10 }}>
-        <Text>Les défauts ajoutés apparaîtront ici</Text>
-        <View style={styles.box}>
-          <FlatList
-            data={savedFaults}
-            renderItem={({ item }) => (
-              <Text>{`\u2022 ${item.categorie} ${
-                item.commentaire && "- " + item.commentaire
-              }`}</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View style={{ gap: 20, flex: 1 }}>
+          <View style={styles.inputContainer}>
+            <Text>Prendre une photo</Text>
+            {photo ? (
+              <Text style={styles.saveText}>Image enregistré.</Text>
+            ) : (
+              <StyledButton
+                label="Prendre une photo"
+                onPress={handleTakePicture}
+              />
             )}
-            keyExtractor={(_, idx) => idx.toString()}
+          </View>
+          <View style={styles.inputContainer}>
+            <Text>Catégorie</Text>
+            <Dropdown
+              style={[
+                styles.dropdown,
+                isFocus && { borderColor: Theme.backgroud },
+              ]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={faults}
+              search
+              maxHeight={300}
+              labelField="categorie"
+              valueField="id_defaut"
+              placeholder={!isFocus ? "Select item" : "..."}
+              searchPlaceholder="Rechercher..."
+              value={selectedFault}
+              onFocus={() => setIsFocus(true)}
+              onBlur={() => setIsFocus(false)}
+              onChange={(item) => {
+                setSelectedFault(item);
+                setIsFocus(false);
+              }}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text>Commentaire</Text>
+            <TextInput
+              style={styles.input}
+              multiline
+              numberOfLines={3}
+              value={comment}
+              onChangeText={setComment}
+            />
+          </View>
+          <StyledButton
+            label="Ajouter"
+            onPress={handleAddFaults}
+            variant="secondary"
           />
         </View>
-        <StyledButton
-          label="Enregistrer"
-          onPress={handleSaveFaults}
-          disabled={savedFaults.length === 0}
-        />
+
+        <View style={{ gap: 10 }}>
+          <Text>Les défauts ajoutés apparaîtront ici</Text>
+          <View style={styles.box}>
+            <FlatList
+              data={savedFaults}
+              renderItem={({ item }) => (
+                <Text>{`\u2022 ${item.categorie} ${
+                  item.commentaire && "- " + item.commentaire
+                }`}</Text>
+              )}
+              keyExtractor={(_, idx) => idx.toString()}
+            />
+          </View>
+          <StyledButton
+            label="Enregistrer"
+            onPress={handleSaveFaults}
+            disabled={savedFaults.length === 0}
+          />
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -192,6 +236,10 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 20,
     paddingBottom: 30,
+  },
+  saveText: {
+    fontSize: 18,
+    color: Theme.primary,
   },
   box: {
     maxHeight: 100,
